@@ -27,6 +27,7 @@ namespace Project.Hometown
                 (upgradeadbleData) =>
                 {
                     _upgradeableData = upgradeadbleData;
+                    OnLevelUp?.Invoke(new LevelupEventData(_upgradeableData.Level, _upgradeableData.MaxLevel));
                     Debug.Log($"Current Level: {_upgradeableData.Level} | Max Level: {_upgradeableData.MaxLevel}");
                 });
         }
