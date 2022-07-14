@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Project.Hometown
 {
-    public class HouseController : IController, IUpgradeable , ICanTriggerSpawn
+    public class HouseController : IController, IUpgradeable, ICanTriggerSpawn
     {
         public event Action<LevelupEventData> OnLevelUp;
         public event Action TriggerSpawn;
@@ -15,26 +15,45 @@ namespace Project.Hometown
 
         public void OnContextDispose()
         {
-            //add implementation
+            _hometownContext = null;
         }
 
-        public HouseController(HometownContext hometownContext , string upgradeableItemName , InputManager inputManager)
+        public HouseController(HometownContext hometownContext, string upgradeableItemName, InputManager inputManager)
         {
             _hometownContext = hometownContext;
             _itemName = upgradeableItemName;
-
-            //add implementation
+            inputManager.OnInputTouch += HandleOnInputTouch;
+            new UpgradeableRepository(_hometownContext).GetUpgradeableData(
+                (upgradeadbleData) =>
+                {
+                    _upgradeableData = upgradeadbleData;
+                    Debug.Log($"Current Level: {_upgradeableData.Level} | Max Level: {_upgradeableData.MaxLevel}");
+                });
         }
 
         public void Upgrade()
         {
             Debug.Log($"Handle Upgrade {_itemName}");
-            //add implementation
+
+            if (_upgradeableData == null) return;
+
+            _upgradeableData.LevelUp();
+
+            if (_upgradeableData.IsLevelMaxed)
+            {
+                TriggerSpawn.Invoke();
+            }
+            else
+            {
+                OnLevelUp?.Invoke(new LevelupEventData(_upgradeableData.Level, _upgradeableData.MaxLevel));
+            }
+
+            Debug.Log($"Current Level: {_upgradeableData.Level} | Max Level: {_upgradeableData.MaxLevel}");
         }
 
         public void HandleOnInputTouch()
         {
-            //add implementation
+            Upgrade();
         }
 
     }
